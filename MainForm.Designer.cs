@@ -30,7 +30,7 @@
         {
             this.DrvBox = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.DrvComboBox = new System.Windows.Forms.ComboBox();
+            this.DevComboBox = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.BaudComboBox = new System.Windows.Forms.ComboBox();
@@ -66,10 +66,10 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
-            this.tableLayoutPanel1.Controls.Add(this.label2, 3, 0);
-            this.tableLayoutPanel1.Controls.Add(this.DrvComboBox, 1, 0);
+            this.tableLayoutPanel1.Controls.Add(this.label2, 4, 0);
+            this.tableLayoutPanel1.Controls.Add(this.DevComboBox, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.label1, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.BaudComboBox, 4, 0);
+            this.tableLayoutPanel1.Controls.Add(this.BaudComboBox, 5, 0);
             this.tableLayoutPanel1.Controls.Add(this.RefreshDeviceButton, 6, 0);
             this.tableLayoutPanel1.Controls.Add(this.ConnectDeviceButton, 7, 0);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(6, 20);
@@ -79,15 +79,15 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(764, 53);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
-            // DrvComboBox
+            // DevComboBox
             // 
-            this.DrvComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanel1.SetColumnSpan(this.DrvComboBox, 2);
-            this.DrvComboBox.FormattingEnabled = true;
-            this.DrvComboBox.Location = new System.Drawing.Point(98, 16);
-            this.DrvComboBox.Name = "DrvComboBox";
-            this.DrvComboBox.Size = new System.Drawing.Size(184, 20);
-            this.DrvComboBox.TabIndex = 1;
+            this.DevComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tableLayoutPanel1.SetColumnSpan(this.DevComboBox, 3);
+            this.DevComboBox.FormattingEnabled = true;
+            this.DevComboBox.Location = new System.Drawing.Point(98, 16);
+            this.DevComboBox.Name = "DevComboBox";
+            this.DevComboBox.Size = new System.Drawing.Size(279, 20);
+            this.DevComboBox.TabIndex = 1;
             // 
             // label1
             // 
@@ -104,7 +104,7 @@
             // 
             this.label2.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(330, 20);
+            this.label2.Location = new System.Drawing.Point(425, 20);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(47, 12);
             this.label2.TabIndex = 4;
@@ -122,7 +122,7 @@
             "38400",
             "57600",
             "115200"});
-            this.BaudComboBox.Location = new System.Drawing.Point(383, 16);
+            this.BaudComboBox.Location = new System.Drawing.Point(478, 16);
             this.BaudComboBox.Name = "BaudComboBox";
             this.BaudComboBox.Size = new System.Drawing.Size(89, 20);
             this.BaudComboBox.TabIndex = 5;
@@ -136,6 +136,7 @@
             this.RefreshDeviceButton.TabIndex = 6;
             this.RefreshDeviceButton.Text = "刷新";
             this.RefreshDeviceButton.UseVisualStyleBackColor = true;
+            this.RefreshDeviceButton.Click += new System.EventHandler(this.RefreshDeviceButton_Click);
             // 
             // ConnectDeviceButton
             // 
@@ -144,8 +145,9 @@
             this.ConnectDeviceButton.Name = "ConnectDeviceButton";
             this.ConnectDeviceButton.Size = new System.Drawing.Size(75, 23);
             this.ConnectDeviceButton.TabIndex = 7;
-            this.ConnectDeviceButton.Text = "连接";
+            this.ConnectDeviceButton.Text = "打开";
             this.ConnectDeviceButton.UseVisualStyleBackColor = true;
+            this.ConnectDeviceButton.Click += new System.EventHandler(this.ConnectDeviceButton_Click);
             // 
             // MainForm
             // 
@@ -155,6 +157,7 @@
             this.Controls.Add(this.DrvBox);
             this.Name = "MainForm";
             this.Text = "ModbusConnect";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.DrvBox.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
@@ -166,7 +169,7 @@
 
         private System.Windows.Forms.GroupBox DrvBox;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private System.Windows.Forms.ComboBox DrvComboBox;
+        private System.Windows.Forms.ComboBox DevComboBox;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox BaudComboBox;
