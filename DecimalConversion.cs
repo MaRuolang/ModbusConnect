@@ -150,5 +150,10 @@ namespace ModbusConnect
         {
             WarnLabel.Visible = false;
         }
+
+        private void DecimalConversion_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            cancellationTokenSource?.Cancel();
+        }
     }
 }

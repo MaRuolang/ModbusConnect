@@ -157,6 +157,7 @@
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "DecimalConversion";
             this.Text = "进制转换工具";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.DecimalConversion_FormClosed);
             this.Load += new System.EventHandler(this.DecimalConversion_Load);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
