@@ -39,26 +39,15 @@ namespace ModbusConnect
         }
 
         #region 设备
-        private string GetDeviceNames(string portName)
-        {
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%" + portName + "%'");
-            foreach (ManagementObject obj in searcher.Get().Cast<ManagementObject>())
-            {
-                return obj["Name"].ToString();
-            }
-            return portName;
-        }
-
         private void GetDevWorkerDoWork(object sender, DoWorkEventArgs e)
         {
-            string[] portNames = SerialPort.GetPortNames();
-            List<string> deviceNames = new List<string>();
+            string query = "SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%(COM%)'";
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+            ManagementObjectCollection results = searcher.Get();
 
-            foreach (string portName in portNames)
-            {
-                string deviceName = GetDeviceNames(portName);
-                deviceNames.Add(deviceName);
-            }
+            List<string> deviceNames = results.Cast<ManagementObject>()
+                                              .Select(obj => obj["Name"].ToString())
+                                              .ToList();
 
             e.Result = deviceNames;
         }
@@ -172,6 +161,28 @@ namespace ModbusConnect
                 BaudComboBox.Enabled = true; // 启用波特率选择框
                 RefreshDeviceButton.Enabled = true; // 启用刷新按钮
             }
+        }
+        #endregion
+
+
+        #region 进制转换工具
+        private void DecimalConversionForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            DecimalConversionToolButton.Enabled = true; // 启用按钮
+        }
+
+        private void DecimalConversionToolButton_Click(object sender, EventArgs e)
+        {
+            DecimalConversionToolButton.Enabled = false; // 禁用按钮
+
+            // 创建新窗体实例
+            DecimalConversion DecimalConversionForm = new DecimalConversion();
+
+            // 绑定窗体关闭事件
+            DecimalConversionForm.FormClosed += DecimalConversionForm_FormClosed;
+
+            // 显示新窗体
+            DecimalConversionForm.Show();
         }
         #endregion
 
