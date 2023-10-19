@@ -8,6 +8,7 @@ using System.IO.Ports;
 using System.Management;
 using System.Text.RegularExpressions;
 using System.Drawing;
+using System.Threading;
 
 namespace ModbusConnect
 {
@@ -29,6 +30,8 @@ namespace ModbusConnect
             GetDevWorker.DoWork += GetDevWorkerDoWork;
             GetDevWorker.RunWorkerCompleted += GetDevWorkerRunWorkerCompleted;
 
+            DevSerial.DataReceived += DevSerial_DataReceived;
+
             BaudComboBox.SelectedItem = "115200";
 
             DevComboBox.Enabled = false; // 禁用选择框
@@ -42,6 +45,8 @@ namespace ModbusConnect
 
             SetupCellProperties();
             SetupContextMenu();
+
+            CommInit();
         }
 
         #region 寄存器
@@ -383,5 +388,69 @@ namespace ModbusConnect
 
         #endregion
 
+        #region 通信
+        // 定义事件参数类
+        public class DataEventArgs : EventArgs
+        {
+            public byte[] Data { get; set; }
+            public int Length { get; set; }
+        }
+
+        // 定义委托
+        public delegate void DataReceivedEventHandler(object sender, DataEventArgs e);
+
+        // 定义事件
+        public event DataReceivedEventHandler DataReceived;
+        public event DataReceivedEventHandler DataSend;
+
+        DataForm DataFormShow;
+
+        private void CommInit()
+        {
+            // 创建右键菜单
+            ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
+
+            // 添加菜单项
+            ToolStripMenuItem signedMenuItem = new ToolStripMenuItem("显示数据窗口");
+            signedMenuItem.Click += (sender, e) =>
+            {
+                if (DataFormShow != null && !DataFormShow.IsDisposed)
+                {
+                    return;
+                }
+                DataFormShow = new DataForm(this);
+                DataFormShow.Show();
+            };
+            contextMenuStrip.Items.Add(signedMenuItem);
+
+            // 将右键菜单分配给 DataGridView 
+            DrvBox.ContextMenuStrip = contextMenuStrip;
+        }
+
+        private void DevSerial_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            int readlen;
+
+            try
+            {
+                do
+                {
+                    readlen = DevSerial.BytesToRead;
+                    Thread.Sleep(20);
+                }
+                while (readlen != DevSerial.BytesToRead);
+
+                byte[] rxbuffer = new byte[readlen];
+
+                DevSerial.Read(rxbuffer, 0, readlen);
+
+                DataReceived?.Invoke(this, new DataEventArgs { Data = rxbuffer, Length = readlen });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+        #endregion
     }
 }
