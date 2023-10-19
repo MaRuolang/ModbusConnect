@@ -179,6 +179,8 @@
             // 
             // RegisterDataGridView
             // 
+            this.RegisterDataGridView.AllowUserToAddRows = false;
+            this.RegisterDataGridView.AllowUserToDeleteRows = false;
             this.RegisterDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.RegisterDataGridView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.RegisterDataGridView.Location = new System.Drawing.Point(3, 17);
@@ -186,6 +188,8 @@
             this.RegisterDataGridView.RowTemplate.Height = 23;
             this.RegisterDataGridView.Size = new System.Drawing.Size(770, 248);
             this.RegisterDataGridView.TabIndex = 0;
+            this.RegisterDataGridView.VirtualMode = true;
+            this.RegisterDataGridView.CellToolTipTextNeeded += new System.Windows.Forms.DataGridViewCellToolTipTextNeededEventHandler(this.RegisterDataGridView_CellToolTipTextNeeded);
             // 
             // groupBox2
             // 
@@ -293,10 +297,11 @@
             this.RegNumNumericUpDown.Size = new System.Drawing.Size(90, 21);
             this.RegNumNumericUpDown.TabIndex = 7;
             this.RegNumNumericUpDown.Value = new decimal(new int[] {
-            39,
+            47,
             0,
             0,
             0});
+            this.RegNumNumericUpDown.ValueChanged += new System.EventHandler(this.RegNumNumericUpDown_ValueChanged);
             // 
             // DecimalConversionToolButton
             // 

@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using System.IO.Ports;
 using System.Management;
 using System.Text.RegularExpressions;
+using System.Drawing;
 
 namespace ModbusConnect
 {
@@ -36,7 +37,202 @@ namespace ModbusConnect
 
             // 在后台线程中执行查询操作
             GetDevWorker.RunWorkerAsync();
+
+            DrawDataGrid();
+
+            SetupCellProperties();
+            SetupContextMenu();
         }
+
+        #region 寄存器
+        public enum DATA_TYPE
+        {
+            DATA_TYPE_SIGNED,
+            DATA_TYPE_UNSIGNED,
+            DATA_TYPE_HEX,
+        };
+        public struct CellProperties
+        {
+            public DATA_TYPE DataType;
+        };
+
+        // 创建一个字典来映射每个单元格的位置与对应的数据结构对象
+        private Dictionary<Tuple<int, int>, CellProperties> cellPropertiesDict = new Dictionary<Tuple<int, int>, CellProperties>();
+
+
+        private void DrawDataGrid()
+        {
+            RegisterDataGridView.Rows.Clear(); // 删除所有行
+            RegisterDataGridView.Columns.Clear(); // 删除所有列
+
+            int RegNumber = (int)RegNumNumericUpDown.Value;
+
+            for (int i = 0; i < (RegNumber / 16) + 1; i++)
+            {
+                RegisterDataGridView.Columns.Add("Name" + i.ToString(), "Name");
+                RegisterDataGridView.Columns.Add("Value" + i.ToString(), (i * 16).ToString("X4"));
+            }
+
+            RegisterDataGridView.Rows.Add(16);
+
+            foreach (DataGridViewColumn column in RegisterDataGridView.Columns)
+            {
+                column.SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+
+            int rowNumber = 0;
+            foreach (DataGridViewRow row in RegisterDataGridView.Rows)
+            {
+                row.HeaderCell.Value = rowNumber.ToString("X");
+                rowNumber++;
+            }
+            RegisterDataGridView.AutoResizeRowHeadersWidth(DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders);
+
+            RegisterDataGridView.Refresh();
+        }
+
+        private void SetupContextMenu()
+        {
+            // 创建右键菜单
+            ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
+
+            // 添加菜单项
+            ToolStripMenuItem signedMenuItem = new ToolStripMenuItem("设置为有符号");
+            signedMenuItem.Click += (sender, e) => UpdateCellProperties(DATA_TYPE.DATA_TYPE_SIGNED);
+            contextMenuStrip.Items.Add(signedMenuItem);
+
+            ToolStripMenuItem unsignedMenuItem = new ToolStripMenuItem("设置为无符号");
+            unsignedMenuItem.Click += (sender, e) => UpdateCellProperties(DATA_TYPE.DATA_TYPE_UNSIGNED);
+            contextMenuStrip.Items.Add(unsignedMenuItem);
+
+            ToolStripMenuItem hexMenuItem = new ToolStripMenuItem("设置为十六进制");
+            hexMenuItem.Click += (sender, e) => UpdateCellProperties(DATA_TYPE.DATA_TYPE_HEX);
+            contextMenuStrip.Items.Add(hexMenuItem);
+
+            // 将右键菜单分配给 DataGridView
+            RegisterDataGridView.ContextMenuStrip = contextMenuStrip;
+        }
+
+        private void UpdateCellProperties(DATA_TYPE dataType)
+        {
+            foreach (DataGridViewCell selectedCell in RegisterDataGridView.SelectedCells)
+            {
+                Tuple<int, int> cellPosition = Tuple.Create(selectedCell.RowIndex, selectedCell.ColumnIndex);
+
+                if (cellPropertiesDict.ContainsKey(cellPosition))
+                {
+                    CellProperties properties = cellPropertiesDict[cellPosition];
+                    properties.DataType = dataType;
+                    cellPropertiesDict[cellPosition] = properties;
+                }
+            }
+        }
+
+        private void SetupCellProperties()
+        {
+            for (int row = 0; row < RegisterDataGridView.Rows.Count; row++)
+            {
+                for (int column = 0; column < RegisterDataGridView.Columns.Count; column++)
+                {
+                    Tuple<int, int> cellPosition = Tuple.Create(row, column);
+
+                    // 创建一个包含解析方式和符号性质的数据结构
+                    CellProperties properties = new CellProperties
+                    {
+                        DataType = DATA_TYPE.DATA_TYPE_UNSIGNED,
+                    };
+
+                    cellPropertiesDict[cellPosition] = properties;
+                }
+            }
+        }
+
+        private void RegNumNumericUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            DrawDataGrid();
+        }
+
+        private Panel tooltipPanel; // 浮动控件
+
+        private void RegisterDataGridView_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
+            {
+                Tuple<int, int> cellPosition = Tuple.Create(e.RowIndex, e.ColumnIndex);
+                string tooltipText = cellPropertiesDict[cellPosition].DataType.ToString(); ;
+
+                // 创建浮动控件
+                tooltipPanel = new Panel
+                {
+                    BackColor = Color.LightYellow,
+                    BorderStyle = BorderStyle.FixedSingle,
+                    AutoSize = true,
+                    Size = new Size(150, 20)
+                };
+
+                // 获取当前单元格的边界信息
+                Rectangle cellRect = RegisterDataGridView.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
+
+                // 设置浮动控件的位置
+                tooltipPanel.Location = new Point(cellRect.Left, cellRect.Top);
+
+                // 创建 Label 控件用于显示提示内容
+                Label tooltipLabel = new Label
+                {
+                    Text = tooltipText,
+                    AutoSize = true,
+                    Location = new Point(5, 5) // 设置 Label 控件的位置
+                };
+                tooltipPanel.Controls.Add(tooltipLabel);
+
+                // 将浮动控件添加到 DataGridView 的父容器中
+                RegisterDataGridView.Parent.Controls.Add(tooltipPanel);
+                tooltipPanel.BringToFront();
+            }
+        }
+
+        private void RegisterDataGridView_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        {
+            // 隐藏或关闭浮动控件
+            if (tooltipPanel != null)
+            {
+                tooltipPanel.Hide();
+                tooltipPanel.Dispose();
+                tooltipPanel = null;
+            }
+        }
+
+        private void RegisterDataGridView_CellToolTipTextNeeded(object sender, DataGridViewCellToolTipTextNeededEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
+            {
+                Tuple<int, int> cellPosition = Tuple.Create(e.RowIndex, e.ColumnIndex);
+                string tooltipText;
+
+                switch (cellPropertiesDict[cellPosition].DataType)
+                {
+                    case DATA_TYPE.DATA_TYPE_SIGNED:
+                        tooltipText = "有符号";
+                        break;
+
+                    case DATA_TYPE.DATA_TYPE_UNSIGNED:
+                        tooltipText = "无符号";
+                        break;
+
+                    case DATA_TYPE.DATA_TYPE_HEX:
+                        tooltipText = "十六进制";
+                        break;
+
+                    default:
+                        tooltipText = "未知";
+                        break;
+                }
+
+                // 为单元格设置工具提示文本
+                e.ToolTipText = tooltipText;
+            }
+        }
+        #endregion
 
         #region 设备
         private void GetDevWorkerDoWork(object sender, DoWorkEventArgs e)
@@ -164,7 +360,6 @@ namespace ModbusConnect
         }
         #endregion
 
-
         #region 进制转换工具
         private void DecimalConversionForm_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -184,6 +379,8 @@ namespace ModbusConnect
             // 显示新窗体
             DecimalConversionForm.Show();
         }
+
+
         #endregion
 
     }
