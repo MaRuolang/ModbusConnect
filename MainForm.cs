@@ -97,20 +97,15 @@ namespace ModbusConnect
         private void SetupContextMenu()
         {
             // 创建右键菜单
-            ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
-
-            // 添加菜单项
-            ToolStripMenuItem signedMenuItem = new ToolStripMenuItem("设置为有符号");
-            signedMenuItem.Click += (sender, e) => UpdateCellProperties(DATA_TYPE.DATA_TYPE_SIGNED);
-            contextMenuStrip.Items.Add(signedMenuItem);
-
-            ToolStripMenuItem unsignedMenuItem = new ToolStripMenuItem("设置为无符号");
-            unsignedMenuItem.Click += (sender, e) => UpdateCellProperties(DATA_TYPE.DATA_TYPE_UNSIGNED);
-            contextMenuStrip.Items.Add(unsignedMenuItem);
-
-            ToolStripMenuItem hexMenuItem = new ToolStripMenuItem("设置为十六进制");
-            hexMenuItem.Click += (sender, e) => UpdateCellProperties(DATA_TYPE.DATA_TYPE_HEX);
-            contextMenuStrip.Items.Add(hexMenuItem);
+            ContextMenuStrip contextMenuStrip = new ContextMenuStrip()
+            {
+                Items =
+                {
+                    new ToolStripMenuItem("设置为有符号", null, (sender, e) => UpdateCellProperties(DATA_TYPE.DATA_TYPE_SIGNED)),
+                    new ToolStripMenuItem("设置为无符号", null, (sender, e) => UpdateCellProperties(DATA_TYPE.DATA_TYPE_UNSIGNED)),
+                    new ToolStripMenuItem("设置为十六进制", null, (sender, e) => UpdateCellProperties(DATA_TYPE.DATA_TYPE_HEX))
+                }
+            };
 
             // 将右键菜单分配给 DataGridView
             RegisterDataGridView.ContextMenuStrip = contextMenuStrip;
@@ -127,6 +122,25 @@ namespace ModbusConnect
                     CellProperties properties = cellPropertiesDict[cellPosition];
                     properties.DataType = dataType;
                     cellPropertiesDict[cellPosition] = properties;
+
+                    switch (dataType)
+                    {
+                        case DATA_TYPE.DATA_TYPE_SIGNED:
+                            selectedCell.ToolTipText = "有符号";
+                            break;
+
+                        case DATA_TYPE.DATA_TYPE_UNSIGNED:
+                            selectedCell.ToolTipText = "无符号";
+                            break;
+
+                        case DATA_TYPE.DATA_TYPE_HEX:
+                            selectedCell.ToolTipText = "十六进制";
+                            break;
+
+                        default:
+                            selectedCell.ToolTipText = "未知";
+                            break;
+                    }
                 }
             }
         }
@@ -146,6 +160,8 @@ namespace ModbusConnect
                     };
 
                     cellPropertiesDict[cellPosition] = properties;
+
+                    RegisterDataGridView.Rows[row].Cells[column].ToolTipText = "无符号";
                 }
             }
         }
@@ -153,87 +169,6 @@ namespace ModbusConnect
         private void RegNumNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
             DrawDataGrid();
-        }
-
-        private Panel tooltipPanel; // 浮动控件
-
-        private void RegisterDataGridView_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
-            {
-                Tuple<int, int> cellPosition = Tuple.Create(e.RowIndex, e.ColumnIndex);
-                string tooltipText = cellPropertiesDict[cellPosition].DataType.ToString(); ;
-
-                // 创建浮动控件
-                tooltipPanel = new Panel
-                {
-                    BackColor = Color.LightYellow,
-                    BorderStyle = BorderStyle.FixedSingle,
-                    AutoSize = true,
-                    Size = new Size(150, 20)
-                };
-
-                // 获取当前单元格的边界信息
-                Rectangle cellRect = RegisterDataGridView.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
-
-                // 设置浮动控件的位置
-                tooltipPanel.Location = new Point(cellRect.Left, cellRect.Top);
-
-                // 创建 Label 控件用于显示提示内容
-                Label tooltipLabel = new Label
-                {
-                    Text = tooltipText,
-                    AutoSize = true,
-                    Location = new Point(5, 5) // 设置 Label 控件的位置
-                };
-                tooltipPanel.Controls.Add(tooltipLabel);
-
-                // 将浮动控件添加到 DataGridView 的父容器中
-                RegisterDataGridView.Parent.Controls.Add(tooltipPanel);
-                tooltipPanel.BringToFront();
-            }
-        }
-
-        private void RegisterDataGridView_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
-        {
-            // 隐藏或关闭浮动控件
-            if (tooltipPanel != null)
-            {
-                tooltipPanel.Hide();
-                tooltipPanel.Dispose();
-                tooltipPanel = null;
-            }
-        }
-
-        private void RegisterDataGridView_CellToolTipTextNeeded(object sender, DataGridViewCellToolTipTextNeededEventArgs e)
-        {
-            if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
-            {
-                Tuple<int, int> cellPosition = Tuple.Create(e.RowIndex, e.ColumnIndex);
-                string tooltipText;
-
-                switch (cellPropertiesDict[cellPosition].DataType)
-                {
-                    case DATA_TYPE.DATA_TYPE_SIGNED:
-                        tooltipText = "有符号";
-                        break;
-
-                    case DATA_TYPE.DATA_TYPE_UNSIGNED:
-                        tooltipText = "无符号";
-                        break;
-
-                    case DATA_TYPE.DATA_TYPE_HEX:
-                        tooltipText = "十六进制";
-                        break;
-
-                    default:
-                        tooltipText = "未知";
-                        break;
-                }
-
-                // 为单元格设置工具提示文本
-                e.ToolTipText = tooltipText;
-            }
         }
         #endregion
 

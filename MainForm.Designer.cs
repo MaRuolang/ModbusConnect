@@ -188,8 +188,6 @@
             this.RegisterDataGridView.RowTemplate.Height = 23;
             this.RegisterDataGridView.Size = new System.Drawing.Size(770, 248);
             this.RegisterDataGridView.TabIndex = 0;
-            this.RegisterDataGridView.VirtualMode = true;
-            this.RegisterDataGridView.CellToolTipTextNeeded += new System.Windows.Forms.DataGridViewCellToolTipTextNeededEventHandler(this.RegisterDataGridView_CellToolTipTextNeeded);
             // 
             // groupBox2
             // 
