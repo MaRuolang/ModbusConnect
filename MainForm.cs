@@ -14,8 +14,6 @@ namespace ModbusConnect
 {
     public partial class MainForm : Form
     {
-        private bool IsSerialConnected = false;
-
         private SerialPort DevSerial = new SerialPort();
 
         private BackgroundWorker GetDevWorker = new BackgroundWorker();
@@ -304,10 +302,9 @@ namespace ModbusConnect
 
         private void ConnectDeviceButton_Click(object sender, EventArgs e)
         {
-            if (IsSerialConnected)
+            if (DevSerial != null && DevSerial.IsOpen)
             {
                 DevSerial.Close();
-                IsSerialConnected = false;
                 ConnectDeviceButton.Text = "打开";
 
                 DevComboBox.Enabled = true; // 启用选择框
@@ -350,7 +347,6 @@ namespace ModbusConnect
                 DevSerial.Open();
                 ConnectDeviceButton.Enabled = true; // 启用连接按钮
 
-                IsSerialConnected = true;
                 ConnectDeviceButton.Text = "关闭";
             }
             catch (Exception ex)
@@ -425,6 +421,8 @@ namespace ModbusConnect
 
             // 将右键菜单分配给 DataGridView 
             DrvBox.ContextMenuStrip = contextMenuStrip;
+
+            DataSend += DevSerial_DataSend;
         }
 
         private void DevSerial_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -445,6 +443,21 @@ namespace ModbusConnect
                 DevSerial.Read(rxbuffer, 0, readlen);
 
                 DataReceived?.Invoke(this, new DataEventArgs { Data = rxbuffer, Length = readlen });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        private void DevSerial_DataSend(object sender, DataEventArgs e)
+        {
+            try
+            {
+                if (DevSerial != null && DevSerial.IsOpen)
+                {
+                    DevSerial.Write(e.Data, 0, e.Length);
+                }
             }
             catch (Exception ex)
             {
