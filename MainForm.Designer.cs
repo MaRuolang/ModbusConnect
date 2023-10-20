@@ -316,6 +316,7 @@
             // 
             this.Func0x10CheckBox.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.Func0x10CheckBox.AutoSize = true;
+            this.Func0x10CheckBox.Enabled = false;
             this.Func0x10CheckBox.Location = new System.Drawing.Point(697, 15);
             this.Func0x10CheckBox.Name = "Func0x10CheckBox";
             this.Func0x10CheckBox.Size = new System.Drawing.Size(48, 16);
